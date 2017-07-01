@@ -3,7 +3,7 @@ import errors from 'feathers-errors';
 
 export const PREDEFINED_FIELDS = ['$limit', '$skip', '$sort', '$select'];
 
-export function create(database, data) {
+export function create (database, data) {
   return database.bulkDocs(data)
     .then(responses => _.map(responses, (response, index) => {
       if (!response.ok) {
@@ -13,13 +13,13 @@ export function create(database, data) {
     }));
 }
 
-export function find(database, params) {
+export function find (database, params) {
   const query = convertQuery(params.query);
   return database.find(query)
     .then(response => response.docs);
 }
 
-export function update(database, params, data) {
+export function update (database, params, data) {
   return find(database, params)
     .then(documents => {
       const operations = _.map(documents, document => {
@@ -37,10 +37,10 @@ export function update(database, params, data) {
         }
         return _.merge(operations[index], extractMeta(response));
       });
-    })
+    });
 }
 
-export function patch(database, params, data) {
+export function patch (database, params, data) {
   return find(database, params)
     .then(documents => {
       const operations = _.map(documents, document => {
@@ -57,10 +57,10 @@ export function patch(database, params, data) {
         }
         return _.merge(operations[index], extractMeta(response));
       });
-    })
+    });
 }
 
-export function remove(database, params) {
+export function remove (database, params) {
   return find(database, params)
     .then(documents => {
       const operations = _.map(documents, document => {
@@ -79,16 +79,16 @@ export function remove(database, params) {
         }
         return _.merge(operations[index], extractMeta(response));
       });
-    })
+    });
 }
 
-export function computeLimit(limit, paginate) {
+export function computeLimit (limit, paginate) {
   const lower = !_.isUndefined(limit) ? parseInt(limit) : paginate.default;
   const upper = _.isNumber(paginate.max) ? paginate.max : Number.MAX_VALUE;
   return Math.min(lower, upper);
 }
 
-export function convertQuery(feathersQuery) {
+export function convertQuery (feathersQuery) {
   const mangoQuery = {};
   for (let queryField in feathersQuery) {
     switch (queryField) {
@@ -121,7 +121,7 @@ export function convertQuery(feathersQuery) {
   return mangoQuery;
 }
 
-export function convertSort(feathersSort) {
+export function convertSort (feathersSort) {
   const mangoSort = [];
   for (let sortField in feathersSort) {
     if (feathersSort[sortField] < 0) {
@@ -129,14 +129,14 @@ export function convertSort(feathersSort) {
       continue;
     }
     if (feathersSort[sortField] > 0) {
-      mangoSort.push({ [sortField]: 'asc'});
+      mangoSort.push({ [sortField]: 'asc' });
       continue;
     }
   }
   return mangoSort;
 }
 
-export function extractMeta(pouchdbResponse) {
+export function extractMeta (pouchdbResponse) {
   return _.mapKeys(_.pick(pouchdbResponse, ['id', 'rev']), (value, key) => {
     return `_${key}`;
   });

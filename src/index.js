@@ -15,8 +15,7 @@ import {
 const debug = makeDebug('feathers-pouchdb');
 
 class Service {
-
-  constructor(options) {
+  constructor (options) {
     if (_.isUndefined(options) || _.isUndefined(options.Model)) {
       throw new Error('PouchDB instance needs to be provided');
     }
@@ -26,12 +25,12 @@ class Service {
     this.paginate = options.paginate || {};
   }
 
-  create(data, params) {
+  create (data, params) {
     data = Array.isArray(data) ? data : [data];
     return create(this.Model, data).then(select(params, this.id));
   }
 
-  find(params) {
+  find (params) {
     params = params || {};
     params.query = _.isObject(params.query) ? params.query : {};
     if (_.isEmpty(_.omit(params.query, PREDEFINED_FIELDS))) {
@@ -48,9 +47,9 @@ class Service {
       params.query.$skip = parseInt(params.query.$skip) || 0;
     }
 
-    const findPromise = (params.query.$limit && params.query.$limit < 1) ?
-      Promise.resolve([]) :
-      find(this.Model, params).then(select(params, this.id));
+    const findPromise = (params.query.$limit && params.query.$limit < 1)
+      ? Promise.resolve([])
+      : find(this.Model, params).then(select(params, this.id));
 
     return findPromise.then(result => {
       if (!params.paginate.default) {
@@ -65,7 +64,7 @@ class Service {
     });
   }
 
-  get(id, params) {
+  get (id, params) {
     params = params || {};
     params.query = _.isObject(params.query) ? params.query : {};
     params.query.$limit = 1;
@@ -79,7 +78,7 @@ class Service {
     }).then(select(params, this.id));
   }
 
-  update(id, data, params) {
+  update (id, data, params) {
     params = params || {};
     params.query = _.isObject(params.query) ? params.query : {};
 
@@ -95,7 +94,7 @@ class Service {
     }).then(select(params, this.id));
   }
 
-  patch(id, data, params) {
+  patch (id, data, params) {
     params = params || {};
     params.query = _.isObject(params.query) ? params.query : {};
 
@@ -111,7 +110,7 @@ class Service {
     }).then(select(params, this.id));
   }
 
-  remove(id, params) {
+  remove (id, params) {
     params = params || {};
     params.query = _.isObject(params.query) ? params.query : {};
 
@@ -126,7 +125,6 @@ class Service {
       return documents;
     }).then(select(params, this.id));
   }
-
 }
 
 export default function init (options) {

@@ -66,6 +66,7 @@
     "feathers-rest": "^1.7.4",
     "feathers-socketio": "^2.0.0",
     "istanbul": "^1.1.0-alpha.1",
+    "locate-path": "^2.0.0",
     "mocha": "^3.4.2",
     "pouchdb-adapter-leveldb": "^6.2.0",
     "pouchdb-core": "^6.2.0",
