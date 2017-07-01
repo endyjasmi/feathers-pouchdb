@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import errors from 'feathers-errors';
 
-export const PREDEFINED_FIELDS = ['$limit', '$skip', '$sort', '$select'];
+export const PREDEFINED_FIELDS = ['$limit', '$skip', '$sort', '$select', '$index'];
 
 export function create (database, data) {
-  return database.bulkDocs(data)
+  return database.bulkDocs(_.slice(data, 0, data.length))
     .then(responses => _.map(responses, (response, index) => {
       if (!response.ok) {
         throw new errors.BadRequest(response.message);
@@ -110,6 +110,10 @@ export function convertQuery (feathersQuery) {
 
       case '$limit':
         mangoQuery.limit = parseInt(feathersQuery[queryField]);
+        break;
+
+      case '$index':
+        mangoQuery.use_index = feathersQuery[queryField];
         break;
 
       default:

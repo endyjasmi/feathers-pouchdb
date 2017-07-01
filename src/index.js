@@ -1,4 +1,6 @@
 import _ from 'lodash';
+import Proto from 'uberproto';
+import crypto from 'crypto';
 import errors from 'feathers-errors';
 import makeDebug from 'debug';
 import { select } from 'feathers-commons';
@@ -17,7 +19,7 @@ const debug = makeDebug('feathers-pouchdb');
 class Service {
   constructor (options) {
     if (_.isUndefined(options) || _.isUndefined(options.Model)) {
-      throw new Error('PouchDB instance needs to be provided');
+      throw new Error('PouchDB datastore `Model` needs to be provided');
     }
     this.Model = options.Model;
     this.events = options.events || [];
@@ -25,16 +27,41 @@ class Service {
     this.paginate = options.paginate || {};
   }
 
+  extend (object) {
+    return Proto.extend(object, this);
+  }
+
   create (data, params) {
-    data = Array.isArray(data) ? data : [data];
-    return create(this.Model, data).then(select(params, this.id));
+    data = Array.isArray(data) ? data : [_.assign({}, data)];
+
+    data = data.map(item => {
+      if (this.id === '_id' || _.isSet(item[this.id])) {
+        return item;
+      }
+      const time = new Date().getTime();
+      const random = crypto.randomBytes(8).toString('hex');
+      return Object.assign({}, item, {
+        [this.id]: time + random
+      });
+    });
+
+    return create(this.Model, data).then(documents => {
+      if (documents.length === 1) {
+        return documents[0];
+      }
+      return documents;
+    }).then(select(params, this.id));
   }
 
   find (params) {
     params = params || {};
     params.query = _.isObject(params.query) ? params.query : {};
     if (_.isEmpty(_.omit(params.query, PREDEFINED_FIELDS))) {
-      params.query[this.id] = { $gte: null };
+      params.query.$and = [
+        { [this.id]: { $gte: null } },
+        { language: { $exists: false } },
+        { views: { $exists: false } }
+      ];
     }
 
     if (Array.isArray(params.query.$select) && params.query.$select.indexOf(this.id) === -1) {
@@ -56,7 +83,7 @@ class Service {
         return result;
       }
       return {
-        total: 0,
+        total: -1,
         limit: params.query.$limit,
         skip: params.query.$skip,
         data: result
@@ -85,7 +112,7 @@ class Service {
     if (id) params.query[this.id] = id;
     return update(this.Model, params, data).then(documents => {
       if (documents.length < 1) {
-        throw new errors.NotFound(`No record found`);
+        throw new errors.NotFound(`No record found for id '${id}'`);
       }
       if (documents.length === 1) {
         return documents[0];
@@ -101,7 +128,7 @@ class Service {
     if (id) params.query[this.id] = id;
     return patch(this.Model, params, data).then(documents => {
       if (documents.length < 1) {
-        throw new errors.NotFound(`No record found`);
+        throw new errors.NotFound(`No record found for id '${id}'`);
       }
       if (documents.length === 1) {
         return documents[0];
@@ -113,11 +140,10 @@ class Service {
   remove (id, params) {
     params = params || {};
     params.query = _.isObject(params.query) ? params.query : {};
-
     if (id) params.query[this.id] = id;
     return remove(this.Model, params).then(documents => {
       if (documents.length < 1) {
-        throw new errors.NotFound(`No record found`);
+        throw new errors.NotFound(`No record found for id '${id}'`);
       }
       if (documents.length === 1) {
         return documents[0];
