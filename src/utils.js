@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import errors from 'feathers-errors';
 
+export const PREDEFINED_FIELDS = ['$limit', '$skip', '$sort', '$select'];
+
 export function create(database, data) {
   return database.bulkDocs(data)
     .then(responses => _.map(responses, (response, index) => {
@@ -85,6 +87,10 @@ export function convertQuery(feathersQuery) {
   for (let queryField in feathersQuery) {
     switch (queryField) {
       case '$select':
+        // Currently fields is filtered right before the data being returned by the service.
+        // In the future, maybe we can incorporate field filtering so that in cases like
+        // PouchDb as CouchDB client, we can save some network bandwidth by transferring only data
+        // that is needed across the wire.
         // mangoQuery.fields = feathersQuery[queryField];
         break;
 
@@ -93,11 +99,11 @@ export function convertQuery(feathersQuery) {
         break;
 
       case '$skip':
-        mangoQuery.skip = feathersQuery[queryField];
+        mangoQuery.skip = parseInt(feathersQuery[queryField]);
         break;
 
       case '$limit':
-        mangoQuery.limit = feathersQuery[queryField];
+        mangoQuery.limit = parseInt(feathersQuery[queryField]);
         break;
 
       default:
