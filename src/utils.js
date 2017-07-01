@@ -1,93 +1,92 @@
-const errors = require('feathers-errors');
+import _ from 'lodash';
+import errors from 'feathers-errors';
 
 export function create(database, data) {
   return database.bulkDocs(data)
-    .then(responses => responses.map((response, index) => {
+    .then(responses => _.map(responses, (response, index) => {
       if (!response.ok) {
         throw new errors.BadRequest(response.message);
       }
-      return Object.assign(data[index], {
-        _id: response.id,
-        _rev: response.rev
-      });
+      return _.merge(data[index], _.pick(response, ['id', 'rev']));
     }));
 }
 
-export function find(database, feathersQuery) {
-  const query = convertQuery(feathersQuery);
+export function find(database, params) {
+  const query = convertQuery(params.query);
   return database.find(query)
     .then(response => response.docs);
 }
 
-export function update(database, feathersQuery, data) {
-  return find(database, feathersQuery)
+export function update(database, params, data) {
+  return find(database, params)
     .then(documents => {
-      const operations = documents.map(document => Object.assign(data, {
-        _id: document._id,
-        _rev: document._rev
-      }));
+      const operations = _.map(documents, document => {
+        const newData = _.assign({}, data);
+        return _.merge(newData, _.pick(document, ['_id', '_rev']));
+      });
       return Promise.all([operations, database.bulkDocs(operations)]);
     })
     .then(result => {
       const operations = result[0];
       const responses = result[1];
-      return responses.map((response, index) => {
+      return _.map(responses, (response, index) => {
         if (!response.ok) {
           throw new errors.Conflict(response.message);
         }
-        return Object.assign(operations, {
-          _id: response.id,
-          _rev: response.rev
+        const newDocument = _.mapKeys(_.pick(response, ['id', 'rev']), (value, key) => {
+          return `_${key}`;
         });
+        return _.merge(operations[index], newDocument);
       });
-    });
+    })
 }
 
-export function patch(database, feathersQuery, data) {
-  return find(database, feathersQuery)
+export function patch(database, params, data) {
+  return find(database, params)
     .then(documents => {
-      const operations = documents.map(document => Object.assign(document, data, {
-        _id: document._id,
-        _rev: document._rev
-      }));
+      const operations = _.map(documents, document => {
+        return _.merge(document, data, _.pick(document, ['_id', '_rev']));
+      });
       return Promise.all([operations, database.bulkDocs(operations)]);
     })
     .then(result => {
       const operations = result[0];
       const responses = result[1];
-      return responses.map((response, index) => {
+      return _.map(responses, (response, index) => {
         if (!response.ok) {
           throw new errors.Conflict(response.message);
         }
-        return Object.assign(operations[index], {
-          _id: response.id,
-          _rev: response.rev
+        const newDocument = _.mapKeys(_.pick(response, ['id', 'rev']), (value, key) => {
+          return `_${key}`;
         });
+        return _.merge(operations[index], newDocument);
       });
-    });
+    })
 }
 
-export function remove(database, feathersQuery) {
-  return find(database, feathersQuery)
+export function remove(database, params) {
+  return find(database, params)
     .then(documents => {
-      const operations = documents.map(document => Object.assign(document, {
-        _deleted:true
-      }));
+      const operations = _.map(documents, document => {
+        return _.merge(document, {
+          _deleted: true
+        });
+      });
       return Promise.all([operations, database.bulkDocs(operations)]);
     })
     .then(result => {
       const operations = result[0];
       const responses = result[1];
-      return responses.map((response, index) => {
+      return _.map(responses, (response, index) => {
         if (!response.ok) {
           throw new errors.Conflict(response.message);
         }
-        return Object.assign(operations, {
-          _id: response.id,
-          _rev: response.rev
+        const newDocument = _.mapKeys(_.pick(response, ['id', 'rev']), (value, key) => {
+          return `_${key}`;
         });
+        return _.merge(operations[index], newDocument);
       });
-    });
+    })
 }
 
 export function convertQuery(feathersQuery) {

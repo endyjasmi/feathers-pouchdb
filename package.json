@@ -52,7 +52,8 @@
   "dependencies": {
     "debug": "^2.6.8",
     "feathers-commons": "^0.8.7",
-    "feathers-errors": "^2.8.1"
+    "feathers-errors": "^2.8.1",
+    "lodash": "^4.17.4"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
