@@ -2,6 +2,10 @@ import errors from 'feathers-errors';
 import makeDebug from 'debug';
 import { select } from 'feathers-commons';
 
+import { convertQuery,
+  createMultiple,
+  createSingle } from './utils';
+
 const debug = makeDebug('feathers-pouchdb');
 
 class Service {
@@ -14,32 +18,8 @@ class Service {
   }
 
   create(data, params) {
-    const createPromise = Array.isArray(data) ?
-      this._createMultiple(data) :
-      this._createSingle(data);
+    const createPromise = Array.isArray(data) ? createMultiple(data) : createSingle(data);
     return createPromise.then(select(params, '_id'));
-  }
-
-  _createMultiple(data) {
-    return this.Model.bulkDocs(data)
-      .then(responses => {
-        return responses.map((response, index) => {
-          return Object.assign(data[index], {
-            _id: response.id,
-            _rev: response.rev
-          });
-        });
-      });
-  }
-
-  _createSingle(data) {
-    return this.Model.post(data)
-      .then(response => {
-        return Object.assign(data, {
-          _id: response.id,
-          _rev: response.rev
-        });
-      });
   }
 
   find(params) {
@@ -52,56 +32,11 @@ class Service {
       params.query.$select.push('_id');
     }
 
-    const mangoQuery = this._convertQuery(params.query);
-    return this.Model.find(mangoQuery)
+    return this.Model.find(convertQuery(params.query))
       .then(response => {
         return response.docs;
       })
       .then(select(params, '_id'));
-  }
-
-  _convertQuery(feathersQuery) {
-    const mangoQuery = {};
-    for (let queryField in feathersQuery) {
-      switch (queryField) {
-        case '$select':
-          mangoQuery.fields = feathersQuery[queryField];
-          break;
-
-        case '$sort':
-          mangoQuery.sort = this._convertSort(feathersQuery[queryField]);
-          break;
-
-        case '$skip':
-          mangoQuery.skip = feathersQuery[queryField];
-          break;
-
-        case '$limit':
-          mangoQuery.limit = feathersQuery[queryField];
-          break;
-
-        default:
-          mangoQuery.selector = mangoQuery.selector || {};
-          mangoQuery.selector[queryField] = feathersQuery[queryField];
-          break;
-      }
-    }
-    return mangoQuery;
-  }
-
-  _convertSort(feathersSort) {
-    const mangoSort = [];
-    for (let sortField in feathersSort) {
-      if (feathersSort[sortField] < 0) {
-        mangoSort.push({ [sortField]: 'desc' });
-        continue;
-      }
-      if (feathersSort[sortField] > 0) {
-        mangoSort.push({ [sortField]: 'asc'});
-        continue;
-      }
-    }
-    return mangoSort;
   }
 
   get(id, params) {
