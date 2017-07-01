@@ -1,58 +1,36 @@
 const PouchDBCore = require('pouchdb-core');
 const PouchDBFind = require('pouchdb-find');
 const PouchDBLevelDBAdapter = require('pouchdb-adapter-leveldb');
+const bodyParser = require('body-parser');
+const errorsHandler = require('feathers-errors/handler');
 const feathers = require('feathers');
+const rest = require('feathers-rest');
 const service = require('../lib');
+const socketio = require('feathers-socketio');
 
 const PouchDB = PouchDBCore.plugin(PouchDBLevelDBAdapter)
   .plugin(PouchDBFind);
 
-const app = feathers();
-app.use('/logs', service({
-  Model: new PouchDB('logs')
+const app = feathers()
+  .configure(rest())
+  .configure(socketio())
+  .use(bodyParser.json())
+  .use(bodyParser.urlencoded({ extended: true }));
+
+app.use('/messages', service({
+  Model: new PouchDB('messages')
 }));
 
-const logService = app.service('/logs');
+app.service('messages').create({
+  text: 'Oh hai!'
+}).then(function (message) {
+  console.log('Created message', message);
+});
 
-// // Create single log
-// const log = {
-//   time: new Date().toISOString()
-// };
-// logService.create(log)
-//   .then(result => console.log(result))
-//   .catch(error => console.error(error));
+app.use(errorsHandler());
 
-// // Create single log with selector
-// const selector = {
-//   query: {
-//     $select: ['time']
-//   }
-// };
-// logService.create(log, selector)
-//   .then(result => console.log(result))
-//   .catch(error => console.error(error));
+const port = 3030;
 
-// // Create multiple log
-// const logs = [
-//   { time: new Date().toISOString() },
-//   { time: new Date().toISOString() },
-//   { time: new Date().toISOString() }
-// ];
-// logService.create(logs)
-//   .then(result => console.log(result))
-//   .catch(error => console.error(error));
-
-// // Create multiple log with selector
-// logService.create(logs, selector)
-//   .then(result => console.log(result))
-//   .catch(error => console.error(error));
-
-// // Find all logs
-// logService.find({ query: { time: {$gt: '2017-07-01T01:57'}}})
-//   .then(result => console.log(result))
-//   .catch(error => console.error(error));
-
-// Get single record
-logService.get('F2EFB5D5-5F6E-1BD5-A2DC-7328D7A41EF1', { query: { $select: ['_rev']}})
-  .then(result => console.log(result))
-  .catch(error => console.error(error));
+app.listen(port, function () {
+  console.log(`Feathers server listening on port ${port}`);
+})
