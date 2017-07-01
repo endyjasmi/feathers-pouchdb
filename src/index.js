@@ -2,7 +2,15 @@ import _ from 'lodash';
 import errors from 'feathers-errors';
 import makeDebug from 'debug';
 import { select } from 'feathers-commons';
-import { PREDEFINED_FIELDS, create, find, update, patch, remove } from './utils';
+
+import {
+  PREDEFINED_FIELDS,
+  computeLimit,
+  create,
+  find,
+  update,
+  patch,
+  remove } from './utils';
 
 const debug = makeDebug('feathers-pouchdb');
 
@@ -33,7 +41,28 @@ class Service {
     if (Array.isArray(params.query.$select) && params.query.$select.indexOf(this.id) === -1) {
       params.query.$select.push(this.id);
     }
-    return find(this.Model, params).then(select(params, this.id));
+
+    params.paginate = _.isObject(params.paginate) ? params.paginate : this.paginate;
+    if (params.paginate.default) {
+      params.query.$limit = computeLimit(params.query.$limit, params.paginate);
+      params.query.$skip = parseInt(params.query.$skip) || 0;
+    }
+
+    const findPromise = (params.query.$limit && params.query.$limit < 1) ?
+      Promise.resolve([]) :
+      find(this.Model, params).then(select(params, this.id));
+
+    return findPromise.then(result => {
+      if (!params.paginate.default) {
+        return result;
+      }
+      return {
+        total: 0,
+        limit: params.query.$limit,
+        skip: params.query.$skip,
+        data: result
+      };
+    });
   }
 
   get(id, params) {

@@ -82,6 +82,12 @@ export function remove(database, params) {
     })
 }
 
+export function computeLimit(limit, paginate) {
+  const lower = !_.isUndefined(limit) ? parseInt(limit) : paginate.default;
+  const upper = _.isNumber(paginate.max) ? paginate.max : Number.MAX_VALUE;
+  return Math.min(lower, upper);
+}
+
 export function convertQuery(feathersQuery) {
   const mangoQuery = {};
   for (let queryField in feathersQuery) {
