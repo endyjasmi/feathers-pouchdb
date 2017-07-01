@@ -7,7 +7,7 @@ export function create(database, data) {
       if (!response.ok) {
         throw new errors.BadRequest(response.message);
       }
-      return _.merge(data[index], _.pick(response, ['id', 'rev']));
+      return _.merge(data[index], extractMeta(response));
     }));
 }
 
@@ -33,10 +33,7 @@ export function update(database, params, data) {
         if (!response.ok) {
           throw new errors.Conflict(response.message);
         }
-        const newDocument = _.mapKeys(_.pick(response, ['id', 'rev']), (value, key) => {
-          return `_${key}`;
-        });
-        return _.merge(operations[index], newDocument);
+        return _.merge(operations[index], extractMeta(response));
       });
     })
 }
@@ -56,10 +53,7 @@ export function patch(database, params, data) {
         if (!response.ok) {
           throw new errors.Conflict(response.message);
         }
-        const newDocument = _.mapKeys(_.pick(response, ['id', 'rev']), (value, key) => {
-          return `_${key}`;
-        });
-        return _.merge(operations[index], newDocument);
+        return _.merge(operations[index], extractMeta(response));
       });
     })
 }
@@ -81,10 +75,7 @@ export function remove(database, params) {
         if (!response.ok) {
           throw new errors.Conflict(response.message);
         }
-        const newDocument = _.mapKeys(_.pick(response, ['id', 'rev']), (value, key) => {
-          return `_${key}`;
-        });
-        return _.merge(operations[index], newDocument);
+        return _.merge(operations[index], extractMeta(response));
       });
     })
 }
@@ -131,4 +122,10 @@ export function convertSort(feathersSort) {
     }
   }
   return mangoSort;
+}
+
+export function extractMeta(pouchdbResponse) {
+  return _.mapKeys(_.pick(pouchdbResponse, ['id', 'rev']), (value, key) => {
+    return `_${key}`;
+  });
 }

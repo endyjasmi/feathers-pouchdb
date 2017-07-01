@@ -2,7 +2,6 @@ import _ from 'lodash';
 import errors from 'feathers-errors';
 import makeDebug from 'debug';
 import { select } from 'feathers-commons';
-
 import { create, find, update, patch, remove } from './utils';
 
 const debug = makeDebug('feathers-pouchdb');
@@ -16,7 +15,6 @@ class Service {
     this.Model = options.Model;
     this.id = options.id || '_id';
     this.events = options.events || [];
-    this.paginate = options.paginate ||{};
   }
 
   create(data, params) {
