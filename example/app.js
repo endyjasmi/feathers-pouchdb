@@ -18,7 +18,7 @@ const logService = app.service('/logs');
 const log = {
   time: new Date().toISOString()
 };
-logs.create(log)
+logService.create(log)
   .then(result => console.log(result))
   .catch(error => console.error(error));
 
@@ -28,7 +28,7 @@ const selector = {
     $select: ['time']
   }
 };
-log.create(log, selector)
+logService.create(log, selector)
   .then(result => console.log(result))
   .catch(error => console.error(error));
 
@@ -38,11 +38,11 @@ const logs = [
   { time: new Date().toISOString() },
   { time: new Date().toISOString() }
 ];
-logs.create(logs)
+logService.create(logs)
   .then(result => console.log(result))
   .catch(error => console.error(error));
 
 // Create multiple log with selector
-log.create(logs, selector)
+logService.create(logs, selector)
   .then(result => console.log(result))
   .catch(error => console.error(error));
