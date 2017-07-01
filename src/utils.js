@@ -95,7 +95,7 @@ export function convertQuery(feathersQuery) {
   for (let queryField in feathersQuery) {
     switch (queryField) {
       case '$select':
-        mangoQuery.fields = feathersQuery[queryField];
+        // mangoQuery.fields = feathersQuery[queryField];
         break;
 
       case '$sort':
