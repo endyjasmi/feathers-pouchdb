@@ -1,8 +1,5 @@
 # feathers-pouchdb
 
-[![Build Status](https://travis-ci.org/himpun/feathers-pouchdb.png?branch=master)](https://travis-ci.org/himpun/feathers-pouchdb)
-[![Code Climate](https://codeclimate.com/github/himpun/feathers-pouchdb/badges/gpa.svg)](https://codeclimate.com/github/himpun/feathers-pouchdb)
-[![Test Coverage](https://codeclimate.com/github/himpun/feathers-pouchdb/badges/coverage.svg)](https://codeclimate.com/github/himpun/feathers-pouchdb/coverage)
 [![Dependency Status](https://img.shields.io/david/himpun/feathers-pouchdb.svg?style=flat-square)](https://david-dm.org/himpun/feathers-pouchdb)
 [![Download Status](https://img.shields.io/npm/dm/feathers-pouchdb.svg?style=flat-square)](https://www.npmjs.com/package/feathers-pouchdb)
 
