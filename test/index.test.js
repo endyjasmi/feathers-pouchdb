@@ -4,9 +4,10 @@ import PouchDBMemoryAdapter from 'pouchdb-adapter-memory';
 import assert from 'assert';
 import errors from 'feathers-errors';
 import feathers from 'feathers';
-import { base } from 'feathers-service-tests';
+import { base, example } from 'feathers-service-tests';
 import { expect } from 'chai';
 
+import server from './test-app';
 import service from '../src';
 
 const PouchDB = PouchDBCore.plugin(PouchDBMemoryAdapter)
@@ -71,4 +72,9 @@ describe('feathers-pouchdb', () => {
     base(app, errors, 'people', '_id');
     base(app, errors, 'people-customid', 'customid');
   });
+});
+
+describe('PouchDB service example test', () => {
+  after(done => server.close(() => done()));
+  example('_id');
 });
