@@ -1,7 +1,7 @@
 {
   "name": "feathers-pouchdb",
   "description": "Feathers PouchDB service.",
-  "version": "0.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/himpun/feathers-pouchdb",
   "main": "lib/",
   "keywords": [
@@ -27,7 +27,7 @@
   },
   "scripts": {
     "prepublish": "npm run compile",
-    "publish": "git push origin --tags && npm run changelog && git push origin",
+    "publish": "git push upstream --tags && git push upstream",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
