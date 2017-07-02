@@ -1,7 +1,7 @@
 {
   "name": "feathers-pouchdb",
   "description": "Feathers PouchDB service.",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "homepage": "https://github.com/himpun/feathers-pouchdb",
   "main": "lib/",
   "keywords": [
