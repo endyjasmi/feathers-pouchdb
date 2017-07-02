@@ -1,9 +1,16 @@
 import _ from 'lodash';
 import errors from 'feathers-errors';
+import makeDebug from 'debug';
 
 export const PREDEFINED_FIELDS = ['$limit', '$skip', '$sort', '$select', '$index'];
+const createDebug = makeDebug('feathers:pouchdb:create:utils');
+const findDebug = makeDebug('feathers:pouchdb:find:utils');
+const updateDebug = makeDebug('feathers:pouchdb:update:utils');
+const patchDebug = makeDebug('feathers:pouchdb:patch:utils');
+const removeDebug = makeDebug('feathers:pouchdb:remove:utils');
 
 export function create (database, data) {
+  createDebug(data);
   return database.bulkDocs(_.slice(data, 0, data.length))
     .then(responses => _.map(responses, (response, index) => {
       if (!response.ok) {
@@ -15,6 +22,7 @@ export function create (database, data) {
 
 export function find (database, params) {
   const query = convertQuery(params.query);
+  findDebug(query);
   return database.find(query)
     .then(response => response.docs);
 }
@@ -26,6 +34,7 @@ export function update (database, params, data) {
         const newData = _.assign({}, data);
         return _.merge(newData, _.pick(document, ['_id', '_rev']));
       });
+      updateDebug(operations);
       return Promise.all([operations, database.bulkDocs(operations)]);
     })
     .then(result => {
@@ -46,6 +55,7 @@ export function patch (database, params, data) {
       const operations = _.map(documents, document => {
         return _.merge(document, data, _.pick(document, ['_id', '_rev']));
       });
+      patchDebug(operations);
       return Promise.all([operations, database.bulkDocs(operations)]);
     })
     .then(result => {
@@ -68,6 +78,7 @@ export function remove (database, params) {
           _deleted: true
         });
       });
+      removeDebug(operations);
       return Promise.all([operations, database.bulkDocs(operations)]);
     })
     .then(result => {

@@ -14,7 +14,13 @@ import {
   patch,
   remove } from './utils';
 
-const debug = makeDebug('feathers-pouchdb');
+const debug = makeDebug('feathers:pouchdb');
+const createDebug = makeDebug('feathers:pouchdb:create');
+const findDebug = makeDebug('feathers:pouchdb:find');
+const getDebug = makeDebug('feathers:pouchdb:get');
+const updateDebug = makeDebug('feathers:pouchdb:update');
+const patchDebug = makeDebug('feathers:pouchdb:patch');
+const removeDebug = makeDebug('feathers:pouchdb:remove');
 
 class Service {
   constructor (options) {
@@ -45,6 +51,7 @@ class Service {
       });
     });
 
+    createDebug(data);
     return create(this.Model, data).then(documents => {
       if (documents.length === 1) {
         return documents[0];
@@ -74,6 +81,7 @@ class Service {
       params.query.$skip = parseInt(params.query.$skip) || 0;
     }
 
+    findDebug(params);
     const findPromise = (params.query.$limit && params.query.$limit < 1)
       ? Promise.resolve([])
       : find(this.Model, params).then(select(params, this.id));
@@ -97,6 +105,8 @@ class Service {
     params.query.$limit = 1;
 
     if (id) params.query[this.id] = id;
+
+    getDebug(params);
     return find(this.Model, params).then(documents => {
       if (documents.length < 1) {
         throw new errors.NotFound(`No record found for id '${id}'`);
@@ -110,6 +120,8 @@ class Service {
     params.query = _.isObject(params.query) ? params.query : {};
 
     if (id) params.query[this.id] = id;
+
+    updateDebug(params, data);
     return update(this.Model, params, data).then(documents => {
       if (documents.length < 1) {
         throw new errors.NotFound(`No record found for id '${id}'`);
@@ -126,6 +138,8 @@ class Service {
     params.query = _.isObject(params.query) ? params.query : {};
 
     if (id) params.query[this.id] = id;
+
+    patchDebug(params, data);
     return patch(this.Model, params, data).then(documents => {
       if (documents.length < 1) {
         throw new errors.NotFound(`No record found for id '${id}'`);
@@ -140,7 +154,10 @@ class Service {
   remove (id, params) {
     params = params || {};
     params.query = _.isObject(params.query) ? params.query : {};
+
     if (id) params.query[this.id] = id;
+
+    removeDebug(params);
     return remove(this.Model, params).then(documents => {
       if (documents.length < 1) {
         throw new errors.NotFound(`No record found for id '${id}'`);
