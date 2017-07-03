@@ -2,7 +2,7 @@
   "name": "feathers-pouchdb",
   "description": "Feathers PouchDB service.",
   "version": "1.0.3",
-  "homepage": "https://github.com/himpun/feathers-pouchdb",
+  "homepage": "https://github.com/endyjasmi/feathers-pouchdb",
   "main": "lib/",
   "keywords": [
     "feathers",
@@ -11,7 +11,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/himpun/feathers-pouchdb.git"
+    "url": "git://github.com/endyjasmi/feathers-pouchdb.git"
   },
   "author": {
     "name": "Feathers contributors",
@@ -20,14 +20,14 @@
   },
   "contributors": [],
   "bugs": {
-    "url": "https://github.com/himpun/feathers-pouchdb/issues"
+    "url": "https://github.com/endyjasmi/feathers-pouchdb/issues"
   },
   "engines": {
     "node": ">= 4.6.0"
   },
   "scripts": {
     "prepublish": "npm run compile",
-    "publish": "git push upstream --tags && git push upstream",
+    "publish": "git push origin --tags && git push origin",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
