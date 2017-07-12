@@ -25,6 +25,12 @@ const app = feathers()
   .use(bodyParser.urlencoded({ extended: true }))
   .use('/todos', todoService);
 
+todoService.Model.createIndex({
+  index: {
+    fields: ['text']
+  }
+});
+
 const port = 3030;
 module.exports = app.listen(port, function () {
   console.log(`Feathers server listening on port ${port}`);

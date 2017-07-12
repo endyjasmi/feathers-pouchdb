@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import Proto from 'uberproto';
+import crypto from 'crypto';
 import errors from 'feathers-errors';
 import makeDebug from 'debug';
 import { select } from 'feathers-commons';
@@ -26,8 +27,7 @@ class Service {
     return Proto.extend(object, this);
   }
 
-  find (params) {
-    params = params || {};
+  _find (params) {
     params.query = _.isObject(params.query) && !_.isEmpty(params.query)
       ? params.query : this.query;
 
@@ -35,27 +35,22 @@ class Service {
       params.query.$select.push(this.id);
     }
 
-    if (_.isObject(params.query.$sort) && !_.isEmpty(params.query.$sort)) {
-      for (let sortField in params.query.$sort) {
-        if (!params.query[sortField]) {
-          params.query[sortField] = { $gte: null };
-        }
-      }
-    }
-
     return this.Model.find(convertQuery(params.query))
       .then(response => response.docs);
   }
 
+  find (params) {
+    return this._find(params);
+  }
+
   get (id, params) {
-    params = params || {};
     params.query = _.isObject(params.query) && !_.isEmpty(params.query)
       ? _.pick(params.query, ['$select', '$index']) : {};
 
     params.query[this.id] = id;
     params.query.$limit = 1;
 
-    return this.find(params)
+    return this._find(params)
       .then(records => {
         if (records.length < 1) {
           throw new errors.NotFound(`No record found for id '${id}'`);
@@ -65,7 +60,14 @@ class Service {
   }
 
   create (data, params) {
-    data = _.clone(_.isArray(data) ? data : [data]);
+    data = _.cloneDeep(_.isArray(data) ? data : [data]);
+    data = data.map(item => {
+      const time = new Date().getTime().toString(16);
+      const random = crypto.randomBytes(8).toString('hex');
+      return _.assign({
+        [this.id]: time + random
+      }, item);
+    });
 
     return this.Model.bulkDocs(data)
       .then(responses => _.map(responses, (response, index) => {
@@ -84,7 +86,6 @@ class Service {
   }
 
   update (id, data, params) {
-    params = params || {};
     params.query = _.isObject(params.query) && !_.isEmpty(params.query)
       ? params.query : this.query;
 
@@ -97,7 +98,7 @@ class Service {
       }, _.pick(findParams.query, ['$index']));
     }
 
-    return this.find(findParams)
+    return this._find(findParams)
       .then(records => {
         const operations = _.map(records, record =>
           _.assign(_.clone(data), _.pick(record, ['_id', '_rev'])));
@@ -126,7 +127,6 @@ class Service {
   }
 
   patch (id, data, params) {
-    params = params || {};
     params.query = _.isObject(params.query) && !_.isEmpty(params.query)
       ? params.query : this.query;
 
@@ -139,7 +139,7 @@ class Service {
       }, _.pick(findParams.query, ['$index']));
     }
 
-    return this.find(findParams)
+    return this._find(findParams)
       .then(records => {
         const operations = _.map(records, record =>
           _.assign(record, data, _.pick(record, ['_id', '_rev'])));
@@ -168,7 +168,6 @@ class Service {
   }
 
   remove (id, params) {
-    params = params || {};
     params.query = _.isObject(params.query) && !_.isEmpty(params.query)
       ? params.query : this.query;
 
@@ -181,7 +180,7 @@ class Service {
       }, _.pick(findParams.query, ['$index']));
     }
 
-    return this.find(findParams)
+    return this._find(findParams)
       .then(records => {
         const operations = _.map(records, record =>
           _.assign(record, { _deleted: true }));
