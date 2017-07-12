@@ -1,5 +1,11 @@
 import _ from 'lodash';
 
+export function computeLimit (limit, paginate) {
+  const lower = !_.isUndefined(limit) ? parseInt(limit) : paginate.default;
+  const upper = _.isNumber(paginate.max) ? paginate.max : Number.MAX_VALUE;
+  return Math.min(lower, upper);
+}
+
 export function convertQuery (feathersQuery) {
   const mangoQuery = {
     selector: {}

@@ -5,7 +5,7 @@ import errors from 'feathers-errors';
 import makeDebug from 'debug';
 import { select } from 'feathers-commons';
 
-import { convertQuery, extractMetadata } from './utilities';
+import { computeLimit, convertQuery, extractMetadata } from './utilities';
 
 const debug = makeDebug('feathers-pouchdb');
 
@@ -40,7 +40,25 @@ class Service {
   }
 
   find (params) {
-    return this._find(params);
+    if (!_.isEmpty(this.paginate)) {
+      params.paginate = params.paginate || this.paginate;
+      if (params.paginate.default) {
+        params.query.$limit = computeLimit(params.query.$limit, params.paginate);
+        params.query.$skip = parseInt(params.query.$skip) || 0;
+      }
+    }
+    return this._find(params)
+      .then(records => {
+        if (_.isUndefined(params.paginate)) {
+          return records;
+        }
+        return {
+          total: records.length,
+          limit: params.query.$limit,
+          skip: params.query.$skip,
+          data: records
+        };
+      });
   }
 
   get (id, params) {
