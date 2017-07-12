@@ -1,12 +1,15 @@
 {
   "name": "feathers-pouchdb",
   "description": "PouchDB feathers service.",
-  "version": "0.0.0",
+  "version": "2.0.0",
   "homepage": "https://github.com/endyjasmi/feathers-pouchdb",
   "main": "lib/",
   "keywords": [
+    "couchdb",
+    "pouchdb",
     "feathers",
-    "feathers-plugin"
+    "feathers-plugin",
+    "feathers-pouchdb"
   ],
   "license": "MIT",
   "repository": {
@@ -14,9 +17,9 @@
     "url": "git://github.com/endyjasmi/feathers-pouchdb.git"
   },
   "author": {
-    "name": "Feathers contributors",
-    "email": "hello@feathersjs.com",
-    "url": "https://feathersjs.com"
+    "name": "Endy Jasmi",
+    "email": "endyjasmi@gmail.com",
+    "url": "https://github.com/endyjasmi"
   },
   "contributors": [],
   "bugs": {
