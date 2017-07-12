@@ -35,7 +35,7 @@ class Service {
       params.query.$select.push(this.id);
     }
 
-    if (params.query.$sort) {
+    if (_.isObject(params.query.$sort) && !_.isEmpty(params.query.$sort)) {
       for (let sortField in params.query.$sort) {
         if (!params.query[sortField]) {
           params.query[sortField] = { $gte: null };
