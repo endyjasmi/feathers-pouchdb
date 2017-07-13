@@ -19,7 +19,7 @@ class Service {
     this.id = options.id || '_id';
     this.paginate = options.paginate || {};
     this.query = options.query || {
-      _id: { $gte: null }
+      [this.id]: { $gte: null }
     };
   }
 
